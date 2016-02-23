@@ -47,7 +47,7 @@ func main() {
 
 	server, err := webs.CreateServer(options.Cloud, options.CloudOptionsPath)
 	if err != nil {
-		panic(fmt.Sprintf("Error creating server [%v]...", err.Error))
+		panic(fmt.Sprintf("Error creating server [%v]...", err))
 	}
 
 	server.Start()
