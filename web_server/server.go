@@ -25,17 +25,20 @@ type Server struct {
 func CreateServer(cloudName string, cloudOptionsFile string) (*Server, error) {
 	serviceInstances, err := loadServiceInstances()
 	if err != nil {
+		utils.Logger.Printf("CreateServer error from loadServiceInstances: %v\n", err)
 		return nil, err
 	}
 
 	serviceBindings, err := loadServiceBindings()
 	if err != nil {
+		utils.Logger.Printf("CreateServer error from loadServiceBindings: %v\n", err)
 		return nil, err
 	}
 	utils.Logger.Printf("CreateServer cloudName:'%s', cloudOptionsFile:'%s'\n\tserviceInstances:'%v', serviceBindings:'%v'\n", cloudName, cloudOptionsFile, serviceInstances, serviceBindings)
 
 	controller, err := CreateController(cloudName, cloudOptionsFile, serviceInstances, serviceBindings)
 	if err != nil {
+		utils.Logger.Printf("CreateServer error from CreateController: %v\n", err)
 		return nil, err
 	}
 
