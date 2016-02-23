@@ -42,7 +42,7 @@ func main() {
 
 	_, err = conf.LoadConfig(options.ConfigPath)
 	if err != nil {
-		panic(fmt.Sprintf("Error loading config file [%s]...", err.Error()))
+		panic(fmt.Sprintf("Error loading config file [%v]...", err))
 	}
 
 	server, err := webs.CreateServer(options.Cloud, options.CloudOptionsPath)

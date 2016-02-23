@@ -86,7 +86,7 @@ func loadServiceInstances() (map[string]*model.ServiceInstance, error) {
 	err := utils.ReadAndUnmarshal(&serviceInstancesMap, conf.DataPath, conf.ServiceInstancesFileName)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Printf("WARNING: service instance data file '%s' does not exist: \n", conf.ServiceInstancesFileName)
+			fmt.Printf("WARNING: service instance data file '%s' does not exist\n", conf.ServiceInstancesFileName)
 			fmt.Printf("WARNING: service instance data path is '%s'\n", conf.DataPath)
 			serviceInstancesMap = make(map[string]*model.ServiceInstance)
 		} else {
@@ -103,7 +103,7 @@ func loadServiceBindings() (map[string]*model.ServiceBinding, error) {
 	err := utils.ReadAndUnmarshal(&bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Printf("WARNING: key map data file '%s' does not exist: \n", conf.ServiceBindingsFileName)
+			fmt.Printf("WARNING: key map data file '%s' does not exist\n", conf.ServiceBindingsFileName)
 			bindingMap = make(map[string]*model.ServiceBinding)
 		} else {
 			return nil, errors.New(fmt.Sprintf("Could not load the service instances, message: %s", err.Error()))
