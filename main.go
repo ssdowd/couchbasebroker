@@ -21,7 +21,7 @@ var options Options
 
 func init() {
 	defaultConfigPath := utils.GetPath([]string{"assets", "config.json"})
-	defaultCloudOptsPath := utils.GetPath([]string{"assets", "emptyoptions.json"})
+	defaultCloudOptsPath := utils.GetPath([]string{"assets", "boshconfig.json"})
 	flag.StringVar(&options.ConfigPath, "config", defaultConfigPath, "use '--config' option to specify the config file path")
 
 	flag.StringVar(&options.Cloud, "service", utils.BOSH, "use '--service' option to specify the cloud client to use: DOCKER, Bosh, AWS or SoftLayer (SL)")
