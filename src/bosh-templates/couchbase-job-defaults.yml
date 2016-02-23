@@ -1,0 +1,11 @@
+jobs:
+- name: couchbase4
+  instances: (( grab couchbase.instances ))
+  lifecycle: service
+  networks:
+  - name: (( grab networks.[0].name ))
+  properties: {
+  }
+  resource_pool: default
+  templates:
+  - name: couchbase4

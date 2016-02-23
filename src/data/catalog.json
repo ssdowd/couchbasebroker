@@ -1,0 +1,58 @@
+{
+  "services": [
+    {
+      "name": "p-couchbase2",
+      "id": "311f6798-7990-11e5-a855-60f81dc0df0a",
+      "description": "Couchbase broker based on new go service broker",
+      "requires": [],
+      "tags": ["Coudhbase"],
+      "bindable": true,
+      "metadata": {
+        "provider": {
+          "name": "Couchbase"
+        },
+        "listing": {
+          "imageUrl": "http://www.couchbase.com/images/logo.svg",
+          "blurb": "broker for Couchbase",
+          "longDescription": "Provides the couchbase service, including VM creation, key pair injection"
+        },
+        "displayName": "Couchbase Service"
+      },
+      "dashboard_client": {
+        "id": "<sso-test>",
+        "secret": "<sso-secret>",
+        "redirect_uri": "http://couchbase.com"
+      },
+      "plan_updateable": true,
+      "plans": [
+        {
+          "name": "plan1",
+          "id": "9241aca2-7990-11e5-9a54-60f81dc0df0a",
+          "description": "some type of couchbase plan here...",
+          "metadata": {
+            "cost": 0,
+            "bullets": []
+          }
+        },
+        {
+          "name": "planII",
+          "id": "a52c3922-7990-11e5-a048-60f81dc0df0a",
+          "description": "another plan for couchbase...",
+          "metadata": {
+            "cost": 0,
+            "bullets": []
+          }
+        },
+        {
+          "name": "jumbo",
+          "id": "bee1029e-7990-11e5-8671-60f81dc0df0a",
+          "description": "the whole shebang",
+          "metadata": {
+            "cost": 0,
+            "bullets": []
+          }
+        }
+      ]
+    }
+  ]
+}

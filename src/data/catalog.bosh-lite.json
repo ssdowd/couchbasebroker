@@ -1,0 +1,54 @@
+{
+  "services": [
+    {
+      "name": "p-couchbase-bl",
+      "id": "952b1d4e-92ff-11e5-a6b6-60f81dc0df0a",
+      "description": "Couchbase broker based on new go service broker - bosh-lite",
+      "requires": [],
+      "tags": ["Couchbase"],
+      "bindable": true,
+      "metadata": {
+        "provider": {
+          "name": "Couchbase"
+        },
+        "listing": {
+          "imageUrl": "http://www.couchbase.com/images/logo.svg",
+          "blurb": "broker for Couchbase",
+          "longDescription": "Provides the couchbase service, including VM creation, key pair injection"
+        },
+        "displayName": "Couchbase Service"
+      },
+      "dashboard_client": {
+        "id": "<sso-test>",
+        "secret": "<sso-secret>",
+        "redirect_uri": "http://couchbase.com"
+      },
+      "plan_updateable": true,
+      "plans": [
+        {
+          "name": "development",
+          "id": "b4c881e6-92ff-11e5-8436-60f81dc0df0a",
+          "description": "single node Couchbase in a bosh (bosh-lite) deployment...",
+          "metadata": {
+            "cost": 0,
+            "bullets": [
+              "768MB Data RAM",
+              "256MB Index RAM"
+            ],
+            "ramQuota": 768,
+            "indexRamQuota": 256
+          }
+        },
+        {
+          "name": "dev-cluster",
+          "id": "cfe06e26-92ff-11e5-aaff-60f81dc0df0a",
+          "description": "multi-node couchbase cluster (TBD)...",
+          "metadata": {
+            "cost": 0,
+            "bullets": []
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# this file will be dynamically built for a specific couchbase deployment (by a broker)
+# Everything else is built from the static templates.  The list of templates used is
+# determined by whatever invokes this (which needs to know which are appropriate).
+
+# Values can be supplied dynamically during spruce invocation:
+#    spruce merge --prune couchbase\
+#        base-cb-deploy.yml \
+#        network-bosh-lite.yml \
+#        couchbase-job-defaults.yml \
+#        stub.yml \
+#        <(echo "name: couchbase-d")  \
+#        <(echo "director_uuid: `bosh status --uuid`")  \
+#    > deploythis-d.yml
+
+# These *must* be overridden via heredocs in the spruce invocation
+name: couchbase-deployment
+director_uuid: a123456-9999-eeee-a1a1-123456abcdef
+
+# These are defaults that *may* be overridden
+couchbase:
+  instances: 1
+  

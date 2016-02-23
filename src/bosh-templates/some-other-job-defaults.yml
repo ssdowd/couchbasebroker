@@ -1,0 +1,11 @@
+jobs:
+- name: bogus
+  instances: 5
+  lifecycle: service
+  networks:
+  - name: cbnetwork
+  properties: {
+  }
+  resource_pool: default
+  templates:
+  - name: someotherjob

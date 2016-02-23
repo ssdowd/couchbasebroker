@@ -1,0 +1,7 @@
+resource_pools:
+- name: default
+  stemcell:
+    name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+    version: 3147
+  network: (( grab networks.[0].name ))
+  cloud_properties:  {}

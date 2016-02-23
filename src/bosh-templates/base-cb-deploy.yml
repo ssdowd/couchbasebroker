@@ -1,0 +1,25 @@
+---
+name: (( replace || "cb-default" ))
+director_uuid: (( replace ))
+
+releases:
+- name: couchbase
+  version: 0+dev.202
+
+networks: (( replace ))
+
+resource_pools: (( replace ))
+
+compilation:
+  workers: 2
+  network: (( grab networks.[0].name ))
+  cloud_properties: {}
+
+update:
+  canaries: 1
+  canary_watch_time: 60000
+  update_watch_time: 60000
+  max_in_flight: 2
+
+jobs:
+  (( append ))

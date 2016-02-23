@@ -1,0 +1,11 @@
+{
+	"port": "7326",
+  "restuser": "cfadmin",
+  "restpassword": "Couchnimda",
+
+	"data_path": "data",
+	"catalog_path": "data",
+
+	"service_instances_file_name": "ServiceInstances.json",
+	"service_bindings_file_name": "ServiceBindings.json"
+}
