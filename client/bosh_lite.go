@@ -15,7 +15,7 @@ import (
 	// uuid "code.google.com/p/go-uuid/uuid"
 	uuid "github.com/pborman/uuid"
 	config "github.com/ssdowd/couchbasebroker/config"
-	model "github.com/ssdowd/couchbasebroker/models"
+	model "github.com/ssdowd/couchbasebroker/model"
 	utils "github.com/ssdowd/couchbasebroker/utils"
 
 	"github.com/cloudfoundry-community/gogobosh"
