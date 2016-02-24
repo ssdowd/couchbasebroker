@@ -1,0 +1,42 @@
+hash: 73c307003b323a5567458501a42e9a68694bcb8600b0197fbfaea1b10487aa58
+updated: 2016-02-24T10:32:46.389814459-06:00
+imports:
+- name: github.com/cloudfoundry-community/gogobosh
+  version: 835b677660b1be83510392e49813e6a575910467
+  subpackages:
+  - api
+  - net
+  - models
+  - constants
+  - utils
+- name: github.com/fsouza/go-dockerclient
+  version: a49c8269a6899cae30da1f8a4b82e0ce945f9967
+  subpackages:
+  - external/github.com/docker/docker/opts
+  - external/github.com/docker/docker/pkg/archive
+  - external/github.com/docker/docker/pkg/fileutils
+  - external/github.com/docker/docker/pkg/homedir
+  - external/github.com/docker/docker/pkg/stdcopy
+  - external/github.com/hashicorp/go-cleanhttp
+  - external/github.com/Sirupsen/logrus
+  - external/github.com/docker/docker/pkg/idtools
+  - external/github.com/docker/docker/pkg/ioutils
+  - external/github.com/docker/docker/pkg/pools
+  - external/github.com/docker/docker/pkg/promise
+  - external/github.com/docker/docker/pkg/system
+  - external/github.com/opencontainers/runc/libcontainer/user
+  - external/golang.org/x/net/context
+- name: github.com/gorilla/context
+  version: 1c83b3eabd45b6d76072b66b746c20815fb2872d
+- name: github.com/gorilla/mux
+  version: 26a6070f849969ba72b72256e9f14cf519751690
+- name: github.com/pborman/uuid
+  version: c55201b036063326c5b1b89ccfe45a184973d073
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  subpackages:
+  - ssh
+  - curve25519
+- name: launchpad.net/goyaml
+  version: "51"
+devImports: []

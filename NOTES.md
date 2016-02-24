@@ -26,6 +26,24 @@ Command line options
 * --config path/to/config (default: assets/config.json)
 * --service CLOUD (default: BOSH)
 
+## Vendoring
+
+I used glide for vendoring here.  Things to note: you have to do your development under $GOPATH/src/github.com/ssdowd/couchbasebroker.  When go gets that, it's a git clone, so it's under VCS.  (This is not obvious from reading Go docs.)
+
+Second, once you have a copy you can use glide (```brew install glide```) to install the dependencies:
+
+```
+glide install
+```
+
+This is required because I chose not to commit the /vendor directory.
+
+These pages are useful: 
+
+* [https://github.com/Masterminds/glide]()
+* [http://engineeredweb.com/blog/2015/go-1.5-vendor-handling/]()
+
+
 ## TODO
 
 * Tie the plans to what gets created.  The sizes in the plan should be passed in when creating an instance.

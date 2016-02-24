@@ -1,0 +1,12 @@
+package: github.com/ssdowd/couchbasebroker
+import:
+- package: github.com/cloudfoundry-community/gogobosh
+  subpackages:
+  - api
+  - net
+- package: github.com/fsouza/go-dockerclient
+- package: github.com/gorilla/mux
+- package: github.com/pborman/uuid
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
