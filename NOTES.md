@@ -28,7 +28,7 @@ Command line options
 
 ## Vendoring
 
-I used glide for vendoring here.  Things to note: you have to do your development under $GOPATH/src/github.com/ssdowd/couchbasebroker.  When go gets that, it's a git clone, so it's under VCS.  (This is not obvious from reading Go docs.)
+I used glide for vendoring here.  Things to note: you have to do your development under $GOPATH/src/github.com/ssdowd/couchbasebroker.  When go gets that, it's a git clone (https), so it's under VCS.  (This is not obvious from reading Go docs.  _You may need to add an alternate remote to push back to github via ssh.  Only for the author and accomplices..._)
 
 Second, once you have a copy you can use glide (```brew install glide```) to install the dependencies:
 
@@ -38,18 +38,56 @@ glide install
 
 This is required because I chose not to commit the /vendor directory.
 
+**Update** This has been converted to use godep, so dependencies are in Godeps/.  Set up your environment as follows:
+
+```
+go get github.com/tools/godep
+godep restore
+```
+**Note: this is destructive to your $GOPATH.  Also, glide may still work, but godep seems to be the mode common method.**
+
 These pages are useful: 
 
 * [https://github.com/Masterminds/glide]()
 * [http://engineeredweb.com/blog/2015/go-1.5-vendor-handling/]()
 
+## Lint, vet, test, ginkgo, etc.
+
+Run **golint** as follows:
+
+```
+go get -u github.com/golang/lint/golint
+golint ./...
+```
+Note: I did not fix lint warnings on packages from the original go_broker.
+
+Run **vet** as follows:
+
+```
+go tool vet -all $(ls -d */ | grep -v Godeps)
+```
+
+Run **test** as follows:
+
+```
+go test
+# OR
+go test ./...
+```
+
+Run **ginkgo** as follows:
+
+```
+go get github.com/onsi/ginkgo/ginkgo
+go get github.com/onsi/gomega 
+ginkgo
+```
 
 ## TODO
 
 * Tie the plans to what gets created.  The sizes in the plan should be passed in when creating an instance.
 * Test this running in Cloud Foundry.
   * Issue: networking between Docker machine and CF
-* Clustering of Couchbase
 
 ##Test the endpoints:
 

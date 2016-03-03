@@ -1,12 +1,10 @@
 package web_server
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
-	// "github.com/abbot/go-http-auth"
 	"github.com/gorilla/mux"
 
 	"github.com/ssdowd/couchbasebroker/config"
@@ -18,10 +16,12 @@ var (
 	conf = config.GetConfig()
 )
 
+// A Server contains a Controller.
 type Server struct {
 	controller *Controller
 }
 
+// CreateServer instantiates a server with an associated controllerf for the given cloud and cloud options.
 func CreateServer(cloudName string, cloudOptionsFile string) (*Server, error) {
 	serviceInstances, err := loadServiceInstances()
 	if err != nil {
@@ -47,6 +47,7 @@ func CreateServer(cloudName string, cloudOptionsFile string) (*Server, error) {
 	}, nil
 }
 
+// Start sets up the REST endpoints and listens on the port.
 func (s *Server) Start() {
 	router := mux.NewRouter()
 
@@ -93,7 +94,7 @@ func loadServiceInstances() (map[string]*model.ServiceInstance, error) {
 			fmt.Printf("WARNING: service instance data path is '%s'\n", conf.DataPath)
 			serviceInstancesMap = make(map[string]*model.ServiceInstance)
 		} else {
-			return nil, errors.New(fmt.Sprintf("Could not load the service instances, message: %s", err.Error()))
+			return nil, fmt.Errorf("Could not load the service instances, message: %s", err.Error())
 		}
 	}
 
@@ -109,7 +110,7 @@ func loadServiceBindings() (map[string]*model.ServiceBinding, error) {
 			fmt.Printf("WARNING: key map data file '%s' does not exist\n", conf.ServiceBindingsFileName)
 			bindingMap = make(map[string]*model.ServiceBinding)
 		} else {
-			return nil, errors.New(fmt.Sprintf("Could not load the service instances, message: %s", err.Error()))
+			return nil, fmt.Errorf("Could not load the service instances, message: %s", err.Error())
 		}
 	}
 

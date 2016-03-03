@@ -7,6 +7,7 @@ import (
 	"github.com/ssdowd/couchbasebroker/utils"
 )
 
+// A BoshConfig holds the information needed to communicate with a BOSH director.
 type BoshConfig struct {
 	DirectorURL      string `json:"director_url"`
 	DirectorUser     string `json:"director_user"`
@@ -15,14 +16,16 @@ type BoshConfig struct {
 	DataDir          string `json:"data_dir"`
 }
 
-type BoshOptions struct {
-	instances int `json:"instances"`
-}
+// BoshOptions holds
+// type BoshOptions struct {
+//   instances int `json:"instances"`
+// }
 
 var (
 	currentBoshConfiguration BoshConfig
 )
 
+// LoadBoshConfig loads the BOSH configuration in the given path and returns a BoshConfig.
 func LoadBoshConfig(path string) (*BoshConfig, error) {
 	if !strings.HasPrefix(path, "/") {
 		path = utils.GetPath([]string{path})
@@ -41,6 +44,7 @@ func LoadBoshConfig(path string) (*BoshConfig, error) {
 	return &currentBoshConfiguration, nil
 }
 
+// GetBoshConfig returns the current BoshConfig.
 func GetBoshConfig() *BoshConfig {
 	return &currentBoshConfiguration
 }
