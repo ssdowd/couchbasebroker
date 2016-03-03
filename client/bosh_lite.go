@@ -18,9 +18,9 @@ import (
 	model "github.com/ssdowd/couchbasebroker/model"
 	utils "github.com/ssdowd/couchbasebroker/utils"
 
-	"github.com/cloudfoundry-community/gogobosh"
-	"github.com/cloudfoundry-community/gogobosh/api"
-	"github.com/cloudfoundry-community/gogobosh/net"
+	"github.com/ssdowd/gogobosh"
+	"github.com/ssdowd/gogobosh/api"
+	"github.com/ssdowd/gogobosh/net"
 )
 
 type BoshClient struct {
