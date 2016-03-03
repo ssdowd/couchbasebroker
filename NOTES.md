@@ -44,7 +44,7 @@ This is required because I chose not to commit the /vendor directory.
 go get github.com/tools/godep
 godep restore
 ```
-**Note: this is destructive to your $GOPATH.  Also, glide may still work, but godep seems to be the mode common method.**
+**Note: this is destructive to your $GOPATH.  Also, glide may still work, but godep seems to be the more common method.**
 
 These pages are useful: 
 
