@@ -100,10 +100,10 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	utils.Logger.Printf("controller.CreateServiceInstance %v - data: %v\n", instanceGUID, instance)
-	utils.Logger.Printf("controller.CreateServiceInstance %v - requested plan: %v\n", instanceGUID, instance.PlanId)
+	utils.Logger.Printf("controller.CreateServiceInstance %v - requested plan: %v\n", instanceGUID, instance.PlanID)
 
-	if !c.cloudClient.IsValidPlan(instance.PlanId) {
-		utils.Logger.Printf("controller.CreateServiceInstance %v - requested plan: %v not found\n", instanceGUID, instance.PlanId)
+	if !c.cloudClient.IsValidPlan(instance.PlanID) {
+		utils.Logger.Printf("controller.CreateServiceInstance %v - requested plan: %v not found\n", instanceGUID, instance.PlanID)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -118,15 +118,15 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	// Here we have the ID of the Docker container in instanceID
 	utils.Logger.Printf("controller.CreateServiceInstance %v - instanceID: %v\n", instanceGUID, instanceID)
 
-	instance.InternalId = instanceID
-	instance.Id = utils.ExtractVarsFromRequest(r, "service_instance_guid")
+	instance.InternalID = instanceID
+	instance.ID = utils.ExtractVarsFromRequest(r, "service_instance_guid")
 	instance.LastOperation = &model.LastOperation{
 		State:                    "in progress",
 		Description:              "creating service instance...",
 		AsyncPollIntervalSeconds: defaultPollingIntervalSeconds,
 	}
 
-	c.instanceMap[instance.Id] = &instance
+	c.instanceMap[instance.ID] = &instance
 	err = utils.MarshalAndRecord(c.instanceMap, conf.DataPath, conf.ServiceInstancesFileName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -137,11 +137,11 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	//=============================================================================================
 	// Now set it up for client access - asynch
 	// TODO: uncomment this...
-	go c.setupInstance(instance.Id, instance.InternalId)
+	go c.setupInstance(instance.ID, instance.InternalID)
 	//=============================================================================================
 
 	response := model.CreateServiceInstanceResponse{
-		DashboardUrl:  instance.DashboardUrl,
+		DashboardURL:  instance.DashboardURL,
 		LastOperation: instance.LastOperation,
 	}
 	utils.Logger.Printf("controller.CreateServiceInstance OK\n")
@@ -162,7 +162,7 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	state, err := c.cloudClient.GetInstanceState(instance.InternalId)
+	state, err := c.cloudClient.GetInstanceState(instance.InternalID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -179,7 +179,7 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 	case "succeeded":
 		instance.LastOperation.State = "succeeded"
 		instance.LastOperation.Description = "successfully created service instance"
-		instance.LastOperation.DashboardUrl = instance.DashboardUrl
+		instance.LastOperation.DashboardURL = instance.DashboardURL
 		instance.LastOperation.AsyncPollIntervalSeconds = 0
 	case "failed":
 		instance.LastOperation.State = "failed"
@@ -214,7 +214,7 @@ func (c *Controller) RemoveServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := c.cloudClient.DeleteInstance(instance.InternalId)
+	err := c.cloudClient.DeleteInstance(instance.InternalID)
 	if err != nil {
 		utils.Logger.Printf("controller.RemoveServiceInstance: %v error: %v\n", instanceID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -269,10 +269,10 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 			}
 			// put into the binding table too...
 			c.bindingMap[bindingID] = &model.ServiceBinding{
-				Id:                bindingID,
-				ServiceId:         instance.ServiceId,
-				ServicePlanId:     instance.PlanId,
-				ServiceInstanceId: instance.Id,
+				ID:                bindingID,
+				ServiceID:         instance.ServiceID,
+				ServicePlanID:     instance.PlanID,
+				ServiceInstanceID: instance.ID,
 				Credential:        instance.Credential,
 				// Credential: model.Credential{
 				//   URI:          instance.Credential.URI,
@@ -291,7 +291,7 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 		} else {
 			utils.Logger.Printf("controller.Bind: %v NOT found in binding map, checking instance %v\n", bindingID, instanceID)
 
-			credential, err := c.cloudClient.GetCredentials(instance.InternalId)
+			credential, err := c.cloudClient.GetCredentials(instance.InternalID)
 			if err != nil {
 				utils.Logger.Printf("controller.Bind: error in GetCredentials: %v\n", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -302,10 +302,10 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 			}
 
 			c.bindingMap[bindingID] = &model.ServiceBinding{
-				Id:                bindingID,
-				ServiceId:         instance.ServiceId,
-				ServicePlanId:     instance.PlanId,
-				ServiceInstanceId: instance.Id,
+				ID:                bindingID,
+				ServiceID:         instance.ServiceID,
+				ServicePlanID:     instance.PlanID,
+				ServiceInstanceID: instance.ID,
 				Credential:        *credential,
 			}
 			err = utils.MarshalAndRecord(c.bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
@@ -335,7 +335,7 @@ func (c *Controller) UnBind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := c.cloudClient.RemoveCredentials(instance.InternalId, bindingID)
+	err := c.cloudClient.RemoveCredentials(instance.InternalID, bindingID)
 	if err != nil {
 		utils.Logger.Printf("controller.UnBind error removing credentials\n")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -358,7 +358,7 @@ func (c *Controller) UnBind(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) deleteAssociatedBindings(instanceID string) error {
 	for id, binding := range c.bindingMap {
-		if binding.ServiceInstanceId == instanceID {
+		if binding.ServiceInstanceID == instanceID {
 			delete(c.bindingMap, id)
 		}
 	}
@@ -397,7 +397,7 @@ func (c *Controller) setupInstance(instanceGUID string, instanceID string) {
 			utils.Logger.Printf("controller.setupInstance: %v: %v\n", instanceID, err)
 		} else {
 			utils.Logger.Printf("controller.setupInstance: %v appears to be ready: %v\n", instanceID, credential)
-			instance.DashboardUrl = credential.URI
+			instance.DashboardURL = credential.URI
 			instance.Credential = *credential
 			instance.LastOperation = &model.LastOperation{
 				State:                    "running",

@@ -1,10 +1,12 @@
 package config
 
 import (
-	"github.com/ssdowd/couchbasebroker/utils"
 	"encoding/json"
+	"github.com/ssdowd/couchbasebroker/utils"
 )
 
+// Config holds the configuration info for the broker (port, data file path,
+// catalog path, instances file, bindings file, rest ID/password).
 type Config struct {
 	Port                     string `json:"port"`
 	DataPath                 string `json:"data_path"`
@@ -19,6 +21,7 @@ var (
 	currentConfiguration Config
 )
 
+// LoadConfig loads and returns the configuration at the indicated path.
 func LoadConfig(path string) (*Config, error) {
 	bytes, err := utils.ReadFile(path)
 	if err != nil {
@@ -32,6 +35,7 @@ func LoadConfig(path string) (*Config, error) {
 	return &currentConfiguration, nil
 }
 
+// GetConfig returns the current configuration.
 func GetConfig() *Config {
 	return &currentConfiguration
 }

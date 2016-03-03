@@ -105,7 +105,7 @@ func (c *BoshClient) IsValidPlan(planName string) bool {
 	// TODO: loop through services in the catalog, and look for a matching plan name
 	for _, s := range c.catalog.Services {
 		for _, p := range s.Plans {
-			if p.Id == planName {
+			if p.ID == planName {
 				return true
 			}
 		}

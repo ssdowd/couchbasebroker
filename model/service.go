@@ -1,8 +1,9 @@
 package model
 
+// A Service contains information about a service corresponding to a catalog entry.
 type Service struct {
 	Name           string   `json:"name"`
-	Id             string   `json:"id"`
+	ID             string   `json:"id"`
 	Description    string   `json:"description"`
 	Bindable       bool     `json:"bindable"`
 	PlanUpdateable bool     `json:"plan_updateable, omitempty"`
