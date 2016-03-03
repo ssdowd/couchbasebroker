@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -11,6 +10,7 @@ import (
 	webs "github.com/ssdowd/couchbasebroker/web_server"
 )
 
+// Options represents the options passed to main.
 type Options struct {
 	ConfigPath       string
 	Cloud            string
@@ -61,5 +61,5 @@ func checkCloudName(name string) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("Invalid cloud name: %s", name))
+	return fmt.Errorf("Invalid cloud name: %s", name)
 }

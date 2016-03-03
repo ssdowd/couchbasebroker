@@ -10,9 +10,9 @@ import (
 	// uuid "code.google.com/p/go-uuid/uuid"
 	uuid "github.com/pborman/uuid"
 
+	dockerclient "github.com/fsouza/go-dockerclient"
 	model "github.com/ssdowd/couchbasebroker/model"
 	utils "github.com/ssdowd/couchbasebroker/utils"
-	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 type dockerProps struct {
@@ -24,12 +24,14 @@ type dockerProps struct {
 	dockerImage    string
 }
 
+// DockerClient holds information about a connection to docker.
 type DockerClient struct {
 	dProps     dockerProps
 	cbDefaults cbDefaultSettings
 	catalog    *model.Catalog
 }
 
+// NewDockerClient returns a new DockerClient.
 func NewDockerClient() *DockerClient {
 	utils.Logger.Println("NewDockerClient ready!")
 
@@ -39,17 +41,18 @@ func NewDockerClient() *DockerClient {
 	}
 }
 
+// GetInstanceState returns the state of this DockerClient.
 // state == pending, running, succeeded, failed
-func (c *DockerClient) GetInstanceState(instanceId string) (string, error) {
+func (c *DockerClient) GetInstanceState(instanceID string) (string, error) {
 	utils.Logger.Printf("client.docker.GetInstanceState: catalog: %v\n", *c.catalog)
-	utils.Logger.Printf("client.docker.GetInstanceState: %v\n", instanceId)
+	utils.Logger.Printf("client.docker.GetInstanceState: %v\n", instanceID)
 	dclient, err := c.createDockerClient()
 	if err != nil {
 		utils.Logger.Printf("client.docker.GetInstanceState: error creating docker client: %v\n", err)
 		return "failed", err
 	}
 
-	container, err := dclient.InspectContainer(instanceId)
+	container, err := dclient.InspectContainer(instanceID)
 	if err != nil {
 		utils.Logger.Printf("client.docker.GetInstanceState: error on InspectContainer: %v\n", err)
 		return "failed", err
@@ -86,6 +89,7 @@ func (c *DockerClient) GetInstanceState(instanceId string) (string, error) {
 	return "pending", nil
 }
 
+// IsValidPlan returns a boolean indicating whether the given planName is in the catalog.
 func (c *DockerClient) IsValidPlan(planName string) bool {
 	if c.catalog == nil {
 		utils.Logger.Printf("client.docker.IsValidPlan: Cannot find the catalog")
@@ -103,7 +107,7 @@ func (c *DockerClient) IsValidPlan(planName string) bool {
 	return false
 }
 
-// Equivalent of: docker run -d --name=cb-test couchbase
+// CreateInstance is the equivalent of: docker run -d --name=cb-test couchbase.
 func (c *DockerClient) CreateInstance(parameters interface{}) (string, error) {
 	// for now we ignore any parameters...
 
@@ -146,8 +150,9 @@ func (c *DockerClient) CreateInstance(parameters interface{}) (string, error) {
 	return container.ID, nil
 }
 
-func (c *DockerClient) DeleteInstance(instanceId string) error {
-	utils.Logger.Printf("client.docker.DeleteInstance: %v\n", instanceId)
+// DeleteInstance will delete the supplied instanceID from the Docker host.
+func (c *DockerClient) DeleteInstance(instanceID string) error {
+	utils.Logger.Printf("client.docker.DeleteInstance: %v\n", instanceID)
 	// get a docker client
 	dclient, err := c.createDockerClient()
 	if err != nil {
@@ -155,37 +160,37 @@ func (c *DockerClient) DeleteInstance(instanceId string) error {
 		return err
 	}
 
-	container, err := dclient.InspectContainer(instanceId)
+	container, err := dclient.InspectContainer(instanceID)
 	if err != nil {
 		utils.Logger.Printf("client.docker.DeleteInstance: error on InspectContainer: %v\n", err)
 		return err
 	}
 
 	if !container.State.Running {
-		return errors.New(fmt.Sprintf("client.docker.DeleteInstance: %v was not running", instanceId))
+		return fmt.Errorf("client.docker.DeleteInstance: %v was not running", instanceID)
 	}
 
-	err = dclient.StopContainer(instanceId, 10)
+	err = dclient.StopContainer(instanceID, 10)
 	if err != nil {
-		utils.Logger.Printf("client.docker.DeleteInstance: timeout on StopContainer %v\n", instanceId)
+		utils.Logger.Printf("client.docker.DeleteInstance: timeout on StopContainer %v\n", instanceID)
 		return err
 	}
 
 	err = dclient.RemoveContainer(dockerclient.RemoveContainerOptions{
-		ID:    instanceId,
+		ID:    instanceID,
 		Force: true,
 	})
 	if err != nil {
-		utils.Logger.Printf("client.docker.DeleteInstance: timeout on StopContainer %v\n", instanceId)
+		utils.Logger.Printf("client.docker.DeleteInstance: timeout on StopContainer %v\n", instanceID)
 		return err
 	}
 
 	return nil
 }
 
-// This will configure the Couchbase instance with credentials and a bucket and other settings
-func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, error) {
-	utils.Logger.Printf("client.docker.GetCredentials: %v\n", instanceId)
+// GetCredentials will configure the Couchbase instance with credentials and a bucket and other settings.
+func (c *DockerClient) GetCredentials(instanceID string) (*model.Credential, error) {
+	utils.Logger.Printf("client.docker.GetCredentials: %v\n", instanceID)
 
 	// get a docker client
 	dclient, err := c.createDockerClient()
@@ -194,14 +199,14 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 		return nil, err
 	}
 
-	container, err := dclient.InspectContainer(instanceId)
+	container, err := dclient.InspectContainer(instanceID)
 	if err != nil {
 		utils.Logger.Printf("client.docker.GetCredentials: error on InspectContainer: %v\n", err)
 		return nil, err
 	}
 
 	if !container.State.Running {
-		return nil, errors.New(fmt.Sprintf("client.docker.GetCredentials: %v was not running", instanceId))
+		return nil, fmt.Errorf("client.docker.GetCredentials: %v was not running", instanceID)
 	}
 	ipaddr := container.NetworkSettings.IPAddress
 	cbProps := cbDefaultProps()
@@ -218,11 +223,10 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 	if err != nil {
 		utils.Logger.Printf("client.docker.GetCredentials: error in http POST %v\n", err)
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(1): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(1): %v", response.StatusCode)
 	}
 
 	// ${CURL} -u id:pw -X POST http://${IP}:8091/pools/default -d indexMemoryQuota=${INDEXQUOTA}
@@ -232,11 +236,10 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(2): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(2): %v", response.StatusCode)
 	}
 
 	// ${CURL} -u Administrator:password -X POST http://${IP}:8091/node/controller/setupServices -d services=${SERVICES}
@@ -247,11 +250,10 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(3): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(3): %v", response.StatusCode)
 	}
 
 	// override the default ID/password
@@ -276,11 +278,10 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(4): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(4): %v", response.StatusCode)
 	}
 
 	// ${CURL} -u ${USERNAME}:${PASSWORD} -X POST http://${IP}:8091/pools/default/buckets \
@@ -294,35 +295,40 @@ func (c *DockerClient) GetCredentials(instanceId string) (*model.Credential, err
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(5): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(5): %v", response.StatusCode)
 	}
 
 	return &credentials, nil
 }
 
-func (c *DockerClient) RemoveCredentials(instanceId string, bindingId string) error {
+// RemoveCredentials is a stub to implement the Client interface.
+func (c *DockerClient) RemoveCredentials(instanceID string, bindingID string) error {
 	// we don't really remove credentials, since all instances will share the same ID/password
 	// if we remove it, we'd need to reconfigure couchbase
 	return nil
 }
 
+// SetCatalog sets the catalog object for this broker.
 func (c *DockerClient) SetCatalog(catalog *model.Catalog) error {
 	c.catalog = catalog
 	return nil
 }
+
+// GetCatalog returns the catalog object for this broker.
 func (c *DockerClient) GetCatalog() *model.Catalog {
 	return c.catalog
 }
 
-// stubs
-func (c *DockerClient) InjectKeyPair(instanceId string) (string, string, string, error) {
+// InjectKeyPair is a stub to implement the client API.
+func (c *DockerClient) InjectKeyPair(instanceID string) (string, string, string, error) {
 	return "", "", "", errors.New("InjectKeyPair not implemented for Docker")
 }
-func (c *DockerClient) RevokeKeyPair(instanceId string, privateKeyName string) error {
+
+// RevokeKeyPair is a stub to implement the client API.
+func (c *DockerClient) RevokeKeyPair(instanceID string, privateKeyName string) error {
 	return errors.New("RevokeKeyPair not implemented for Docker")
 }
 

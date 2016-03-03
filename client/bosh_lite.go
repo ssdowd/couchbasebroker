@@ -23,6 +23,7 @@ import (
 	"github.com/ssdowd/gogobosh/net"
 )
 
+// A BoshClient manages aconnection to a BOSH director.
 type BoshClient struct {
 	dProps     *config.BoshConfig
 	cbDefaults cbDefaultSettings
@@ -42,6 +43,7 @@ var yamlList = []string{
 	"stub.yml",
 }
 
+// NewBoshClient creates and returns a BoshClient for use in working with a BOSH director.
 func NewBoshClient(configFile string) *BoshClient {
 	// utils.Logger.Printf("NewBoshClient %v\n", configFile)
 	_, err := config.LoadBoshConfig(configFile)
@@ -56,13 +58,14 @@ func NewBoshClient(configFile string) *BoshClient {
 	}
 }
 
+// GetInstanceState returns a string indicating the state of the instance.
 // state == pending, running, succeeded, failed
-func (c *BoshClient) GetInstanceState(instanceId string) (string, error) {
+func (c *BoshClient) GetInstanceState(instanceID string) (string, error) {
 	// utils.Logger.Printf("client.bosh.GetInstanceState: catalog: %v\n", *c.catalog)
-	utils.Logger.Printf("client.bosh.GetInstanceState: instanceID: %v: task ID: %v\n", instanceId, c.tasks[instanceId])
+	utils.Logger.Printf("client.bosh.GetInstanceState: instanceID: %v: task ID: %v\n", instanceID, c.tasks[instanceID])
 
 	// we don't have a task for it, assume it is good...
-	if c.tasks[instanceId] == 0 {
+	if c.tasks[instanceID] == 0 {
 		return "succeeded", nil
 	}
 
@@ -71,7 +74,7 @@ func (c *BoshClient) GetInstanceState(instanceId string) (string, error) {
 		utils.Logger.Printf("client.bosh.GetInstanceState: error creating bosh client: %v\n", err)
 		return "failed", err
 	}
-	taskStatus, apiResponse := boshclient.GetTaskStatus(c.tasks[instanceId])
+	taskStatus, apiResponse := boshclient.GetTaskStatus(c.tasks[instanceID])
 	if apiResponse.IsNotSuccessful() {
 		utils.Logger.Printf("client.bosh.GetInstanceState... gogo.GetTaskStatus error: %v\n", apiResponse)
 	}
@@ -88,10 +91,11 @@ func (c *BoshClient) GetInstanceState(instanceId string) (string, error) {
 	case "error":
 		return "failed", nil
 	default:
-		return "failed", errors.New(fmt.Sprintf("Unknown bosh status: %v", taskStatus.State))
+		return "failed", fmt.Errorf("Unknown bosh status: %v", taskStatus.State)
 	}
 }
 
+// IsValidPlan checks the given planName to ensure it appears in the catalog.
 func (c *BoshClient) IsValidPlan(planName string) bool {
 	if c.catalog == nil {
 		utils.Logger.Printf("client.bosh.IsValidPlan: Cannot find the catalog")
@@ -109,7 +113,7 @@ func (c *BoshClient) IsValidPlan(planName string) bool {
 	return false
 }
 
-// Equivalent of: bosh run -d --name=cb-test couchbase
+// CreateInstance is the qquivalent of: bosh run -d --name=cb-test couchbase.
 func (c *BoshClient) CreateInstance(parameters interface{}) (string, error) {
 	utils.Logger.Printf("client.bosh.CreateInstance parms: %v\n", parameters)
 	// for now we ignore any parameters...
@@ -236,16 +240,17 @@ func (c *BoshClient) CreateInstance(parameters interface{}) (string, error) {
 		// there is no body on this, but we'll read it anyway...
 		body, _ := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
-		return "", errors.New(fmt.Sprintf("error POSTing deployment: %s: %v", resp.Status, body))
+		return "", fmt.Errorf("error POSTing deployment: %s: %v", resp.Status, body)
 	}
 }
 
 func noRedirect(req *http.Request, via []*http.Request) error {
-	return errors.New(fmt.Sprintf("Don't redirect to %v", req))
+	return fmt.Errorf("Don't redirect to %v", req)
 }
 
-func (c *BoshClient) DeleteInstance(instanceId string) error {
-	utils.Logger.Printf("client.bosh.DeleteInstance: %v\n", instanceId)
+// DeleteInstance deletes the instance in Bosh with the associated instanceID.
+func (c *BoshClient) DeleteInstance(instanceID string) error {
+	utils.Logger.Printf("client.bosh.DeleteInstance: %v\n", instanceID)
 	// get a bosh client
 	boshclient, err := c.createBoshClient()
 	if err != nil {
@@ -253,12 +258,12 @@ func (c *BoshClient) DeleteInstance(instanceId string) error {
 		return err
 	}
 	utils.Logger.Printf("client.bosh.DeleteInstance...Client: %v\n", boshclient)
-	fileName := c.dProps.DataDir + string(os.PathSeparator) + instanceId + ".yml"
+	fileName := c.dProps.DataDir + string(os.PathSeparator) + instanceID + ".yml"
 
-	apiResponse := boshclient.DeleteDeployment(instanceId)
+	apiResponse := boshclient.DeleteDeployment(instanceID)
 	if apiResponse.IsNotSuccessful() {
-		utils.Logger.Printf("client.bosh.DeleteInstance: failed to delete deployment %v: %v", instanceId, apiResponse)
-		return errors.New(fmt.Sprintf("failed to delete %v", instanceId))
+		utils.Logger.Printf("client.bosh.DeleteInstance: failed to delete deployment %v: %v", instanceID, apiResponse)
+		return fmt.Errorf("failed to delete %v", instanceID)
 	}
 	err = os.Remove(fileName)
 	if err != nil {
@@ -267,9 +272,9 @@ func (c *BoshClient) DeleteInstance(instanceId string) error {
 	return nil
 }
 
-// This will configure the Couchbase instance with credentials and a bucket and other settings
-func (c *BoshClient) GetCredentials(instanceId string) (*model.Credential, error) {
-	// utils.Logger.Printf("client.bosh.GetCredentials: %v\n", instanceId)
+// GetCredentials will configure the Couchbase instance with credentials and a bucket and other settings
+func (c *BoshClient) GetCredentials(instanceID string) (*model.Credential, error) {
+	// utils.Logger.Printf("client.bosh.GetCredentials: %v\n", instanceID)
 
 	// get a bosh client
 	boshclient, err := c.createBoshClient()
@@ -277,7 +282,7 @@ func (c *BoshClient) GetCredentials(instanceId string) (*model.Credential, error
 		utils.Logger.Printf("client.bosh.GetCredentials: error creating Bosh client: %v\n", err)
 		return nil, err
 	}
-	taskStatus, apiResponse := boshclient.GetTaskStatus(c.tasks[instanceId])
+	taskStatus, apiResponse := boshclient.GetTaskStatus(c.tasks[instanceID])
 	if apiResponse.IsNotSuccessful() {
 		utils.Logger.Printf("client.bosh.GetCredentials... gogo.GetTaskStatus apiResponse: %v\n", apiResponse)
 	}
@@ -305,10 +310,10 @@ func (c *BoshClient) GetCredentials(instanceId string) (*model.Credential, error
 		utils.Logger.Printf("client.bosh.GetCredentials: error creating Bosh client: %v\n", err)
 		return nil, err
 	}
-	vmStatuses, apiResponse := boshclient.FetchVMsStatus(instanceId)
+	vmStatuses, apiResponse := boshclient.FetchVMsStatus(instanceID)
 	if apiResponse.IsNotSuccessful() {
 		utils.Logger.Printf("client.bosh.GetCredentials... gogo.FetchVMsStatus: %v\n", apiResponse)
-		return nil, errors.New(fmt.Sprintf("Could not invoke gogo.FetchVMsStatus: %v", apiResponse.Message))
+		return nil, fmt.Errorf("Could not invoke gogo.FetchVMsStatus: %v", apiResponse.Message)
 	}
 	var cred *model.Credential
 	cred = nil
@@ -335,25 +340,33 @@ func (c *BoshClient) GetCredentials(instanceId string) (*model.Credential, error
 	return cred, nil
 }
 
-func (c *BoshClient) RemoveCredentials(instanceId string, bindingId string) error {
+// RemoveCredentials does not really remove credentials for Couchbase, since
+// there may be other app instances bound to this service instance, or they may
+// want to reuse that instance.
+func (c *BoshClient) RemoveCredentials(instanceID string, bindingID string) error {
 	// we don't really remove credentials, since all instances will share the same ID/password
 	// if we remove it, we'd need to reconfigure couchbase
 	return nil
 }
 
+// SetCatalog sets the catalog object for this broker.
 func (c *BoshClient) SetCatalog(catalog *model.Catalog) error {
 	c.catalog = catalog
 	return nil
 }
+
+// GetCatalog returns the catalog object for this broker.
 func (c *BoshClient) GetCatalog() *model.Catalog {
 	return c.catalog
 }
 
-// stubs
-func (c *BoshClient) InjectKeyPair(instanceId string) (string, string, string, error) {
+// InjectKeyPair is a stub to implement the client API.
+func (c *BoshClient) InjectKeyPair(instanceID string) (string, string, string, error) {
 	return "", "", "", errors.New("InjectKeyPair not implemented for Bosh")
 }
-func (c *BoshClient) RevokeKeyPair(instanceId string, privateKeyName string) error {
+
+// RevokeKeyPair is a stub to implement the client API.
+func (c *BoshClient) RevokeKeyPair(instanceID string, privateKeyName string) error {
 	return errors.New("RevokeKeyPair not implemented for Bosh")
 }
 
@@ -385,11 +398,10 @@ func (c *BoshClient) configureCouchbaseInstance(ipaddr, userID, passwd, saslpass
 	if err != nil {
 		utils.Logger.Printf("client.bosh.configureCouchbaseInstance: error in http POST %v\n", err)
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(1): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(1): %v", response.StatusCode)
 	}
 	defer response.Body.Close()
 
@@ -400,11 +412,10 @@ func (c *BoshClient) configureCouchbaseInstance(ipaddr, userID, passwd, saslpass
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(2): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(2): %v", response.StatusCode)
 	}
 	defer response.Body.Close()
 
@@ -416,11 +427,10 @@ func (c *BoshClient) configureCouchbaseInstance(ipaddr, userID, passwd, saslpass
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(3): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(3): %v", response.StatusCode)
 	}
 	defer response.Body.Close()
 
@@ -443,11 +453,10 @@ func (c *BoshClient) configureCouchbaseInstance(ipaddr, userID, passwd, saslpass
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(4): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(4): %v", response.StatusCode)
 	}
 	defer response.Body.Close()
 
@@ -462,11 +471,10 @@ func (c *BoshClient) configureCouchbaseInstance(ipaddr, userID, passwd, saslpass
 	response, err = client.Do(request)
 	if err != nil {
 		return nil, err
-	} else {
-		switch response.StatusCode {
-		case http.StatusBadRequest, http.StatusUnauthorized:
-			return nil, errors.New(fmt.Sprintf("Bad response from Couchbase(5): %v", response.StatusCode))
-		}
+	}
+	switch response.StatusCode {
+	case http.StatusBadRequest, http.StatusUnauthorized:
+		return nil, fmt.Errorf("Bad response from Couchbase(5): %v", response.StatusCode)
 	}
 	defer response.Body.Close()
 
